@@ -1,0 +1,55 @@
+name: C++ Build and Test
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  docker-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
+
+    - name: 🐳 Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: .github/workflows/Dockerfile
+        tags: cpp-dev-env:latest
+        load: true  
+
+    - name: 🔧 Compile and Run Tests
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/app -w /app cpp-dev-env:latest bash -c "
+          g++ -std=c++17 -fsanitize=address -fno-omit-frame-pointer -g -O0 -Wall -Wextra -o main main.cpp -I. -Isrc -Ihelpers src/*.cpp tests/*.cpp &&
+          ./main
+        "
+    
+  notify-discord:
+    needs: [docker-test]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 📤 Send Discord notification (short)
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.WEB_HOOK_THREAD }}
+        run: |
+          STATUS="${{ needs.docker-test.result }}"
+          CURRENT_BRANCH="${GITHUB_REF##*/}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          TIME_NOW=$(date -u +"%Y-%m-%d %H:%M UTC")
+
+          if [ "$STATUS" = "success" ]; then
+            EMOJI="✅"
+          else
+            EMOJI="❌"
+          fi
+
+          MESSAGE="**[${CURRENT_BRANCH}](${RUN_URL})** ${EMOJI} ${STATUS} at ${TIME_NOW}"
+
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\": \"${MESSAGE}\"}" \
+            "$DISCORD_WEBHOOK_URL"
