@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: 📤 Send Discord notification (short)
         env:
-          DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/..."
+          DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/1404369798233591898/LAYlsFMSi5Ya837kq1hOiiAN6r4Y8aV7tD9xOJvB_1mElSEtCXOyCAcpSgVyoFNV6K-c?thread_id=1404369544880853033"
         run: |
           STATUS="${{ needs.docker-test.result }}"
 
