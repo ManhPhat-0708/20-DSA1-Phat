@@ -36,17 +36,28 @@ public:
     void reverse();
     string toString(string (*convert2str)(T &) = 0) const;
 
-    void mergeSort(bool (*cmp)(const T &, const T &));
-    Node *mergeSortHelper(Node *start, int n, bool (*cmp)(const T &, const T &));
-    Node *merge(Node *left, int lenL, Node *right, int lenR, bool (*cmp)(const T &, const T &));
+    //void mergeSort(bool (*cmp)(const T &, const T &));
+    //Node *mergeSortHelper(Node *start, int n, bool (*cmp)(const T &, const T &));
+    //Node *merge(Node *left, int lenL, Node *right, int lenR, bool (*cmp)(const T &, const T &));
+
+    Node* getNode(int index) const{
+    if (index < 0 || index >= length) {
+        throw std::out_of_range("Index is invalid!");
+    }
+    Node* cur = head->next;
+    for (int i = 0; i < index; ++i) {
+        cur = cur->next;
+    }
+    return cur;
+    };
 
     class Iterator
     {
     private:
         Node *current;
-
+        const DoublyLinkedList<T> *list;
     public:
-        Iterator(Node *node) : current(node) {}
+         Iterator(Node *node, const DoublyLinkedList<T> *list) : current(node), list(list) {}
 
         T &operator*() const
         {
@@ -55,14 +66,28 @@ public:
 
         Iterator &operator++()
         {
-            current = current->next;
+            if(current) current = current->next;
             return *this;
+        }
+
+         Iterator operator++(int)
+        {
+            Iterator temp = *this;
+            ++(*this);
+            return temp;
         }
 
         Iterator &operator--()
         {
             current = current->prev;
             return *this;
+        }
+
+        Iterator operator--(int)
+        {
+            Iterator temp = *this;
+            --(*this);
+            return temp;
         }
 
         bool operator==(const Iterator &other) const
@@ -78,12 +103,12 @@ public:
 
     Iterator begin() const
     {
-        return Iterator(head->next);
+        return Iterator(head->next, this);
     }
 
     Iterator end() const
     {
-        return Iterator(tail);
+        return Iterator(tail, this);
     }
 };
 

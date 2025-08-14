@@ -48,7 +48,14 @@ public:
         bool canUndo() const;
         bool canRedo() const;
         void printHistory() const;
+
+        Action getLastAct() const;
+        Action getCurrentAction() const;
+        void moveBack();
+        void moveForward();
+
         friend class TestHelper;
+        friend class TextBuffer;
     };
 
 private:
